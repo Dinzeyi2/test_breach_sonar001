@@ -1,4 +1,4 @@
-name: "CodeQL Advanced Security Scan"
+name: "CodeQL Security Scan"
 
 on:
   push:
@@ -11,9 +11,8 @@ on:
 
 jobs:
   analyze:
-    name: Analyze (${{ matrix.language }})
+    name: Analyze
     runs-on: ubuntu-latest
-    timeout-minutes: 360
     permissions:
       actions: read
       contents: read
@@ -22,21 +21,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'javascript' ]
+        language: [ 'javascript', 'typescript' ]
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
-        config-file: ./.github/codeql/codeql-config.yml
         queries: security-extended,security-and-quality
-        setup-python-dependencies: ${{ matrix.language == 'python' }}
 
     - name: Autobuild
       uses: github/codeql-action/autobuild@v3
@@ -44,12 +39,4 @@ jobs:
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
-        category: "/language:${{matrix.language}}"
-        upload: true
-        output: sarif-results
-        
-    - name: Upload SARIF
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: sarif-results
         category: "/language:${{matrix.language}}"
