@@ -1,0 +1,21 @@
+name: "Advanced CodeQL Config"
+
+queries:
+  - uses: security-extended
+  - uses: security-and-quality
+
+paths-ignore:
+  - '**/node_modules/**'
+  - '**/dist/**'
+  - '**/build/**'
+  - '**/vendor/**'
+  - '**/*.test.*'
+  - '**/*.spec.*'
+
+paths:
+  - 'src/**'
+  - 'lib/**'
+  - 'app/**'
+  - 'pages/**'
+  - 'api/**'
+  - 'functions/**'
