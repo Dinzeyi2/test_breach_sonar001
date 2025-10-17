@@ -1,0 +1,32 @@
+name: "Advanced CodeQL Security Configuration"
+
+disable-default-queries: false
+
+queries:
+  - uses: security-extended
+  - uses: security-and-quality
+  - uses: security-experimental
+  - uses: ./.github/codeql/queries
+
+paths-ignore:
+  - 'node_modules'
+  - 'vendor'
+  - 'dist'
+  - 'build'
+  - 'target'
+  - '.git'
+  - '__pycache__'
+  - 'coverage'
+  - 'test'
+  - 'tests'
+  - 'spec'
+  - '*.min.js'
+  - '*.bundle.js'
+  - 'public/assets'
+
+query-filters:
+  - include:
+      tags contain: security
+      precision: high
+  - exclude:
+      tags contain: [external/non-security, test]
