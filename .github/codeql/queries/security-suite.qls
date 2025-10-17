@@ -1,0 +1,10 @@
+- description: Custom security queries with enhanced detection
+- queries: .
+- apply: security-and-quality
+- include:
+    tags contain:
+      - security
+      - external/cwe
+- exclude:
+    tags contain:
+      - test
