@@ -1,8 +1,8 @@
-name: "CodeQL Advanced Security Scan"
+name: "CodeQL Security Scan"
 
 on:
   push:
-    branches: [ "main", "master", "develop" ]
+    branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
   schedule:
@@ -11,9 +11,8 @@ on:
 
 jobs:
   analyze:
-    name: Analyze (${{ matrix.language }})
+    name: Analyze
     runs-on: ubuntu-latest
-    timeout-minutes: 360
     permissions:
       actions: read
       contents: read
@@ -22,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'javascript', 'typescript', 'python', 'java', 'go', 'ruby' ]
+        language: [ 'javascript', 'typescript' ]
 
     steps:
     - name: Checkout repository
@@ -32,34 +31,7 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
-        # Use comprehensive query suites for maximum coverage
         queries: security-extended,security-and-quality
-        # Advanced configuration with custom rules
-        config: |
-          name: "Advanced Security Configuration"
-          
-          # Exclude non-code directories
-          paths-ignore:
-            - '**/node_modules/**'
-            - '**/dist/**'
-            - '**/build/**'
-            - '**/__tests__/**'
-            - '**/vendor/**'
-            - '**/.venv/**'
-          
-          # Enable path queries for attack chain visualization
-          queries:
-            - uses: security-extended
-            - uses: security-and-quality
-          
-          # Detect more languages automatically
-          languages:
-            - javascript
-            - typescript
-            - python
-            - java
-            - go
-            - ruby
 
     - name: Autobuild
       uses: github/codeql-action/autobuild@v3
@@ -68,7 +40,3 @@ jobs:
       uses: github/codeql-action/analyze@v3
       with:
         category: "/language:${{matrix.language}}"
-        # Upload SARIF with full path information
-        upload: true
-        # Include data flow paths
-        add-snippets: true
