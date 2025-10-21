@@ -2,9 +2,9 @@ name: "CodeQL Security Scan"
 
 on:
   push:
-    branches: [ "main", "master", "security-scan-v1-1761027016395" ]
+    branches: [ "*" ]
   pull_request:
-    branches: [ "main", "master", "security-scan-v1-1761027016395" ]
+    branches: [ "*" ]
   schedule:
     - cron: '0 0 * * 0'
   workflow_dispatch:
