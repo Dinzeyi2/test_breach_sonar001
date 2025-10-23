@@ -18,11 +18,6 @@ jobs:
       contents: read
       security-events: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'javascript', 'typescript', 'python', 'java', 'cpp', 'csharp', 'ruby', 'go' ]
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -30,7 +25,6 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
-        languages: ${{ matrix.language }}
         queries: security-extended,security-and-quality
 
     - name: Autobuild
@@ -38,5 +32,3 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:${{matrix.language}}"
