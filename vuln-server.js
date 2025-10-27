@@ -23,7 +23,7 @@ db.serialize(() => {
   )`);
 });
 
-// Vulnerability: no HTTPS enforcement, no helmet, no rate limit, no input validation
+// Vulnerability: no HTTPS enforcement, no helmet, no input validation
 app.get('/signup', (req, res) => {
   res.send(`
     <form method="POST" action="/signup">
@@ -35,27 +35,36 @@ app.get('/signup', (req, res) => {
   `);
 });
 
-// Vulnerability #1: string concatenation → SQL injection
-// Vulnerability #2: storing plaintext password
-// Vulnerability #3: no validation, no rate-limiting, no captcha
+// Vulnerability #1: storing plaintext password still requires bcrypt for hashing
+// TODO: Implement rate-limiting middleware to prevent brute-force attacks
 app.post('/signup', (req, res) => {
   const { username, email, password } = req.body;
 
-  // Vulnerability #4: showing raw DB errors to users
+  // Fix #1: Use parameterized queries to prevent SQL injection
   const sql = `INSERT INTO users (username,email,password,created_at)
-               VALUES ('${username}','${email}','${password}','${new Date().toISOString()}')`;
-  db.run(sql, function(err) {
-    if (err) return res.status(500).send('DB-ERR: ' + err.message); // leaks info
-    // Vulnerability #5: creating an insecure session cookie (no HttpOnly, no Secure flag)
-    res.cookie('session', `${this.lastID}`, { maxAge: 24*3600*1000 }); 
-    // Vulnerability #6: reflected XSS via username echo
-    res.send(`Welcome <b>${username}</b>! Account created. ID=${this.lastID}`);
+               VALUES (?,?,?,?)`;
+  db.run(sql, [username, email, password, new Date().toISOString()], function(err) {
+    if (err) return res.status(500).send('An error occurred during signup.'); // Fix #2: Generic error message to prevent info leakage
+    
+    // Fix #3: Create a secure session cookie (HttpOnly, Secure)
+    res.cookie('session', `${this.lastID}`, { maxAge: 24*3600*1000, httpOnly: true, secure: true }); 
+    
+    // Fix #4: Escape username to prevent reflected XSS
+    const escapedUsername = (username || '').replace(/[&<>"']/g, function (match) {
+      return {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[match];
+    });
+    res.send(`Welcome <b>${escapedUsername}</b>! Account created. ID=${this.lastID}`);
   });
 });
 
-// Vulnerability #7: debug endpoint that leaks full DB (sensitive data)
-app.get('/dump-users', (req, res) => {
-  db.all("SELECT * FROM users", (e, rows) => res.json(rows));
-});
+// Fix #5: Removed debug endpoint that leaks full DB (sensitive data)
+// In a production app, this kind of functionality should be secured with strong authentication/authorization,
+// or ideally, not exist at all.
 
 app.listen(3000, () => console.log('VULN server listening on :3000'));
